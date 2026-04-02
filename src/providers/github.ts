@@ -9,7 +9,7 @@ export interface GitHubAsset {
 
 export function detectPlatform() {
   const os = process.platform === 'darwin' ? 'darwin' : 'linux';
-  let arch = process.arch;
+  let arch: string = process.arch;
   if (arch === 'aarch64') arch = 'arm64';
   if (arch === 'x86_64' || arch === 'amd64') arch = 'x64';
   return `${os}-${arch}`;

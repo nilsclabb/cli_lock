@@ -17,7 +17,7 @@ export async function installNpmTool(name: string, config: ToolConfig, rootDir: 
 
   // Initialize or update package.json in .cli/npm
   const pkgPath = path.join(npmDir, 'package.json');
-  let pkg = { name: 'cli-lock-npm-prefix', private: true, dependencies: {} };
+  let pkg: { name: string, private: boolean, dependencies: Record<string, string> } = { name: 'cli-lock-npm-prefix', private: true, dependencies: {} };
   if (await fs.pathExists(pkgPath)) {
     pkg = await fs.readJson(pkgPath);
   }
