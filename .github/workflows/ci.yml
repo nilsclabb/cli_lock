@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
+        runtime: [node, bun]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      if: matrix.runtime == 'node'
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Setup Bun
+      if: matrix.runtime == 'bun'
+      uses: oven-sh/setup-bun@v1
+
+    - name: Install dependencies
+      run: |
+        if [ "${{ matrix.runtime }}" = "node" ]; then
+          npm install
+        else
+          bun install
+        fi
+
+    - name: Run unit tests
+      run: |
+        if [ "${{ matrix.runtime }}" = "node" ]; then
+          npm test
+        else
+          bun test run
+        fi
+
+    - name: E2E Test: Init & Install
+      run: |
+        # 1. Create a dummy project
+        mkdir test-project && cd test-project
+        echo '{"name": "test-project", "devDependencies": {"prettier": "^3.2.0"}}' > package.json
+        
+        # 2. Run cli-lock init (non-interactive defaults)
+        # Using tsx to run the source directly for E2E
+        npx tsx ../src/index.ts init --yes
+        
+        # 3. Verify cli-lock.toml was created
+        if [ ! -f cli-lock.toml ]; then
+          echo "cli-lock.toml was not created"
+          exit 1
+        fi
+        
+        # 4. Run cli-lock install
+        npx tsx ../src/index.ts install
+        
+        # 5. Verify file structure
+        if [ ! -L .cli/bin/prettier ]; then
+          echo ".cli/bin/prettier symlink not found"
+          exit 1
+        fi
+        
+        if [ ! -d .cli/npm/node_modules/prettier ]; then
+          echo "prettier not installed in .cli/npm/"
+          exit 1
+        fi
+        
+        # 6. Test execution
+        ./.cli/bin/prettier --version
