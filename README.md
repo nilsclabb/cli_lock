@@ -43,6 +43,9 @@ Use the `--frozen` flag in CI to ensure that the lockfile is up to date and that
 npx cli-lock install --frozen
 echo "$(pwd)/.cli/bin" >> $GITHUB_PATH
 ```
+## NOTE!!!
+This project / package is heavily vibed. Please consider that this is an early alpha. Bugs may occur, alot. 
+
 
 ## License
 
